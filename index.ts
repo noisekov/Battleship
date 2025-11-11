@@ -1,24 +1,23 @@
-import { httpServer } from './src/http_server/index.ts'
+import { httpServer } from './src/http_server/index.ts';
+import { WebSocketServer } from 'ws';
+import { WebsocketHandler } from './src/WebsocketHandler/WebsocketHandler.ts';
 
-const HTTP_PORT = 8181
+const HTTP_PORT = 8181;
 
-console.log(`Start static http server on the ${HTTP_PORT} port!`)
-httpServer.listen(HTTP_PORT)
+console.log(`Start static http server on the ${HTTP_PORT} port!`);
+httpServer.listen(HTTP_PORT);
 
-const socket = new WebSocket('ws://localhost:3000')
+const wss = new WebSocketServer({ port: 3000 });
 
-socket.onopen = function (e) {
-  console.log(e)
-}
+wss.on('connection', (ws) => {
+  // console.log(ws)
+  ws.on('message', (message) => {
+    const messageObject = message.toString();
+    ws.send(messageObject);
+    WebsocketHandler.handler(JSON.parse(messageObject));
+  });
 
-socket.onmessage = function (event) {
-  console.log(event)
-}
-
-socket.onclose = function (event) {
-  console.log(event)
-}
-
-socket.onerror = function (error) {
-  console.log(error)
-}
+  ws.on('close', () => {
+    console.log('Client disconnected');
+  });
+});
