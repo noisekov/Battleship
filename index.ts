@@ -1,6 +1,9 @@
 import { httpServer } from './src/http_server/index.ts';
 import { WebSocketServer } from 'ws';
-import { WebsocketHandler } from './src/WebsocketHandler/WebsocketHandler.ts';
+import { createUser } from './src/utils/createUser.ts';
+import { createRoom } from './src/utils/createRoom.ts';
+import { updateWinners } from './src/utils/updateWinners.ts';
+import { Storage } from './src/Storage/Storage.ts';
 
 const HTTP_PORT = 8181;
 
@@ -10,11 +13,25 @@ httpServer.listen(HTTP_PORT);
 const wss = new WebSocketServer({ port: 3000 });
 
 wss.on('connection', (ws) => {
-  // console.log(ws)
   ws.on('message', (message) => {
     const messageObject = message.toString();
-    ws.send(messageObject);
-    WebsocketHandler.handler(JSON.parse(messageObject));
+    const type = JSON.parse(messageObject).type;
+
+    if (type === 'reg') {
+      const userData = createUser(messageObject);
+      const roomData = createRoom(userData, type);
+      const winnersData = updateWinners();
+
+      ws.send(JSON.stringify(userData));
+      ws.send(JSON.stringify(roomData));
+      ws.send(JSON.stringify(winnersData));
+    }
+
+    if (type === 'create_room') {
+      const userData = Storage.getInstance.getUserData();
+      const roomData = createRoom(userData, type);
+      ws.send(JSON.stringify(roomData));
+    }
   });
 
   ws.on('close', () => {
