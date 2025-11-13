@@ -42,7 +42,10 @@ wss.on('connection', (ws) => {
 
       if (canCreateGame(messageObject)) {
         const createGameRequest = createGame(messageObject);
-        ws.send(JSON.stringify(createGameRequest));
+
+        wss.clients.forEach((client) =>
+          client.send(JSON.stringify(createGameRequest))
+        );
       }
     }
   });
