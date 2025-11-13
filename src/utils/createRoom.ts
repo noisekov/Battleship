@@ -10,26 +10,19 @@ type IuserData = {
 export const createRoom = (userData: IuserData, typeEntry: string) => {
   const { name, index } = JSON.parse(userData.data);
   const roomId = randomUUID();
+  const roomData = Storage.getInstance.getRoom();
   let resultArr: any = [];
 
   if (typeEntry === 'reg') {
-    resultArr = [];
+    resultArr = roomData;
   }
 
   if (typeEntry === 'create_room') {
-    resultArr = [
-      {
-        roomId: roomId,
-        roomUsers: [
-          {
-            name: name,
-            index: index,
-          },
-        ],
-      },
-    ];
-
-    Storage.getInstance.updateUserData(index, 'roomdId', roomId);
+    const roomData = {
+      roomId: roomId,
+      roomUsers: [] as any[],
+    };
+    resultArr = [roomData];
   }
 
   return {

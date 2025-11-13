@@ -4,6 +4,7 @@ import { createUser } from './src/utils/createUser.ts';
 import { createRoom } from './src/utils/createRoom.ts';
 import { updateWinners } from './src/utils/updateWinners.ts';
 import { Storage } from './src/Storage/Storage.ts';
+import { addUserToRoom } from './src/utils/addUserToRoom.ts';
 
 const HTTP_PORT = 8181;
 
@@ -31,6 +32,11 @@ wss.on('connection', (ws) => {
       const userData = Storage.getInstance.getUserData();
       const roomData = createRoom(userData, type);
       ws.send(JSON.stringify(roomData));
+    }
+
+    if (type === 'add_user_to_room') {
+      const request = addUserToRoom(messageObject);
+      ws.send(JSON.stringify(request));
     }
   });
 
