@@ -97,4 +97,8 @@ export class Storage {
   getShipPositions() {
     return this.shipPositions;
   }
+
+  getUsers() {
+    return this.data;
+  }
 }

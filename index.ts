@@ -9,6 +9,7 @@ import { createGame } from './src/utils/createGame.ts';
 import { canCreateGame } from './src/utils/canCreateGame.ts';
 import { addShips } from './src/utils/addShips.ts';
 import { startGame } from './src/utils/startGame.ts';
+import { attack, randomAttack } from './src/utils/makeAttack.ts';
 
 const HTTP_PORT = 8181;
 
@@ -58,6 +59,14 @@ wss.on('connection', (ws) => {
       }
 
       addShips(messageObject);
+    }
+
+    if (type === 'attack') {
+      attack(messageObject);
+    }
+
+    if (type === 'randomAttack') {
+      randomAttack(messageObject);
     }
   });
 

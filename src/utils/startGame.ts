@@ -29,4 +29,13 @@ export const startGame = () => {
       id: 0,
     })
   );
+  secondUserConnection.ws.send(
+    JSON.stringify({
+      type: 'turn',
+      data: JSON.stringify({
+        currentPlayer: indexPlayerSecond,
+      }),
+      id: 0,
+    })
+  );
 };
