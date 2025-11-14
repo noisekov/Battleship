@@ -9,11 +9,13 @@ type IRoom = {
 export class Storage {
   private data: any[] = [];
   private roomData: any[] = [];
+  private shipPositions: any[] = [];
   private static _instance: Storage;
 
   private constructor() {
     this.data = [];
     this.roomData = [];
+    this.shipPositions = [];
   }
 
   public static get getInstance() {
@@ -76,5 +78,23 @@ export class Storage {
     const lastUser = this.data[this.data.length - 1];
 
     return { data: JSON.stringify(lastUser) };
+  }
+
+  getUserDataByIndex(index: string) {
+    const user = this.data.find((user) => user.index === index);
+
+    return user;
+  }
+
+  addPositions(data: any) {
+    this.shipPositions.push(data);
+  }
+
+  checkShipPositions() {
+    return this.shipPositions.length === 1;
+  }
+
+  getShipPositions() {
+    return this.shipPositions;
   }
 }
