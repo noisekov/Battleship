@@ -94,7 +94,22 @@ export class Storage {
   }
 
   addPositions(data: any) {
-    this.shipPositions.push(data);
+    const { ships } = data;
+    const newDataShips: any = [];
+
+    ships.forEach((ship: any) => {
+      const allShipsData = Array.from({ length: ship.length }, (_, i) => {
+        if (ship.direction) {
+          return { position: { x: ship.position.x, y: ship.position.y + i } };
+        } else {
+          return { position: { x: ship.position.x + i, y: ship.position.y } };
+        }
+      });
+
+      newDataShips.push(...allShipsData);
+    });
+
+    this.shipPositions.push({ ...data, ships: newDataShips });
   }
 
   checkShipPositions() {
@@ -119,7 +134,6 @@ export class Storage {
         ({ position }: IShip) => position.x === x && position.y === y
       )
     ) {
-      // 'killed' |
       return 'shot';
     }
 
@@ -128,8 +142,8 @@ export class Storage {
         ({ position }: IShip) => position.x !== x && position.y !== y
       )
     ) {
-      //  'killed' |
       return 'miss';
     }
+    // 'killed' |
   }
 }
