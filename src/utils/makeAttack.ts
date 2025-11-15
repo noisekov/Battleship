@@ -7,6 +7,7 @@ export const attack = (messageObject: string, wss: WebSocketServer) => {
   const users = Storage.getInstance.getUsers();
   const { name } = users.find((user) => user.index === data.indexPlayer);
   const response = attackFeedback(data);
+  const status = JSON.parse(response.data).status;
   wss.clients.forEach((client) => client.send(JSON.stringify(response)));
   const isWin = checkIsWin(data.indexPlayer);
 
@@ -17,7 +18,8 @@ export const attack = (messageObject: string, wss: WebSocketServer) => {
     });
     return;
   }
-  turn(data.indexPlayer);
+
+  turn(data.indexPlayer, status);
 
   return response;
 };
@@ -28,6 +30,7 @@ export const randomAttack = (messageObject: string, wss: WebSocketServer) => {
   const { name } = users.find((user) => user.index === data.indexPlayer);
   const { x, y } = generateRandomAttack();
   const response = attackFeedback({ x, y, ...data });
+  const status = JSON.parse(response.data).status;
   wss.clients.forEach((client) => client.send(JSON.stringify(response)));
   const isWin = checkIsWin(data.indexPlayer);
 
@@ -38,24 +41,40 @@ export const randomAttack = (messageObject: string, wss: WebSocketServer) => {
     });
     return;
   }
-  turn(data.indexPlayer);
+
+  turn(data.indexPlayer, status);
 
   return response;
 };
 
-function turn(playerId: string) {
+function turn(playerId: string, status: string) {
   const users = Storage.getInstance.getUsers();
-  const { ws, index } = users.find((user) => user.index !== playerId);
-
-  ws.send(
-    JSON.stringify({
-      type: 'turn',
-      data: JSON.stringify({
-        currentPlayer: index,
-      }),
-      id: 0,
-    })
+  const { ws, index: anotherPlayer } = users.find(
+    (user) => user.index !== playerId
   );
+  const { ws: wsAnotherPlayer } = users.find((user) => user.index === playerId);
+
+  if (status === 'miss') {
+    ws.send(
+      JSON.stringify({
+        type: 'turn',
+        data: JSON.stringify({
+          currentPlayer: anotherPlayer,
+        }),
+        id: 0,
+      })
+    );
+  } else {
+    wsAnotherPlayer.send(
+      JSON.stringify({
+        type: 'turn',
+        data: JSON.stringify({
+          currentPlayer: playerId,
+        }),
+        id: 0,
+      })
+    );
+  }
 }
 
 function attackFeedback(data: any) {

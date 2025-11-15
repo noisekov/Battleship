@@ -147,13 +147,12 @@ export class Storage {
           position.x === x && position.y === y && !isKilled
       );
       ship.isKilled = true;
-
       return 'shot';
     }
 
     if (
       findDataPositions.ships.every(
-        ({ position }: IShip) => position.x !== x && position.y !== y
+        ({ position }: IShip) => position.x !== x || position.y !== y
       )
     ) {
       return 'miss';
