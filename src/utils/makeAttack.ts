@@ -2,34 +2,23 @@ import { WebSocketServer } from 'ws';
 import { Storage } from '../Storage/Storage.ts';
 import { checkIsWin, sendFinish, updateWinners } from './updateWinners.ts';
 
-export const attack = (messageObject: string, wss: WebSocketServer) => {
+export const attack = (
+  messageObject: string,
+  wss: WebSocketServer,
+  type: 'randomAttack' | 'attack'
+) => {
   const data = JSON.parse(JSON.parse(messageObject).data);
   const users = Storage.getInstance.getUsers();
   const { name } = users.find((user) => user.index === data.indexPlayer);
-  const response = attackFeedback(data);
-  const status = JSON.parse(response.data).status;
-  wss.clients.forEach((client) => client.send(JSON.stringify(response)));
-  const isWin = checkIsWin(data.indexPlayer);
+  let response;
 
-  if (isWin) {
-    wss.clients.forEach((client) => {
-      client.send(JSON.stringify(updateWinners(name)));
-      client.send(JSON.stringify(sendFinish(data.indexPlayer)));
-    });
-    return;
+  if (type === 'randomAttack') {
+    const { x, y } = generateRandomAttack();
+    response = attackFeedback({ x, y, ...data });
+  } else {
+    response = attackFeedback(data);
   }
 
-  turn(data.indexPlayer, status);
-
-  return response;
-};
-
-export const randomAttack = (messageObject: string, wss: WebSocketServer) => {
-  const data = JSON.parse(JSON.parse(messageObject).data);
-  const users = Storage.getInstance.getUsers();
-  const { name } = users.find((user) => user.index === data.indexPlayer);
-  const { x, y } = generateRandomAttack();
-  const response = attackFeedback({ x, y, ...data });
   const status = JSON.parse(response.data).status;
   wss.clients.forEach((client) => client.send(JSON.stringify(response)));
   const isWin = checkIsWin(data.indexPlayer);
@@ -38,6 +27,13 @@ export const randomAttack = (messageObject: string, wss: WebSocketServer) => {
     wss.clients.forEach((client) => {
       client.send(JSON.stringify(updateWinners(name)));
       client.send(JSON.stringify(sendFinish(data.indexPlayer)));
+      client.send(
+        JSON.stringify({
+          type: 'update_room',
+          data: JSON.stringify([]),
+          id: 0,
+        })
+      );
     });
     return;
   }
