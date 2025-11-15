@@ -1,13 +1,12 @@
 import { Storage } from '../Storage/Storage.ts';
 
 export const createGame = (messageObject: string) => {
+  const storage = Storage.getInstance;
   const { indexRoom } = JSON.parse(JSON.parse(messageObject).data);
-  const room = Storage.getInstance.getRoomByIndex(indexRoom);
+  const room = storage.getRoomByIndex(indexRoom);
   const [{ index: firstUserId }, { index: secondUserId }] = room.roomUsers;
-  const { ws: clientFirstUser } =
-    Storage.getInstance.getUserDataByIndex(firstUserId);
-  const { ws: clientSecondUser } =
-    Storage.getInstance.getUserDataByIndex(secondUserId);
+  const { ws: clientFirstUser } = storage.getUserDataByIndex(firstUserId);
+  const { ws: clientSecondUser } = storage.getUserDataByIndex(secondUserId);
 
   clientFirstUser.send(
     JSON.stringify({

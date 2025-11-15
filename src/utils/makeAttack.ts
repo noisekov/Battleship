@@ -16,13 +16,13 @@ export const randomAttack = (messageObject: string) => {
 
 function turn(playerId: string) {
   const users = Storage.getInstance.getUsers();
-  const user = users.find((user) => user.index !== playerId);
+  const { ws, index } = users.find((user) => user.index !== playerId);
 
-  user.ws.send(
+  ws.send(
     JSON.stringify({
       type: 'turn',
       data: JSON.stringify({
-        currentPlayer: user.index,
+        currentPlayer: index,
       }),
       id: 0,
     })

@@ -1,8 +1,9 @@
 import { Storage } from '../Storage/Storage.ts';
 
 export const addUserToRoom = (messageObj: string) => {
+  const storage = Storage.getInstance;
   const { indexRoom } = JSON.parse(JSON.parse(messageObj).data);
-  const { name, index } = JSON.parse(Storage.getInstance.getUserData().data);
+  const { name, index } = JSON.parse(storage.getUserData().data);
   const roomData = {
     roomId: indexRoom,
     roomUsers: [
@@ -12,8 +13,8 @@ export const addUserToRoom = (messageObj: string) => {
       },
     ],
   };
-  Storage.getInstance.addRoom(roomData, name);
-  const roomStorageData = Storage.getInstance.getRoomByIndex(indexRoom);
+  storage.addRoom(roomData, name);
+  const roomStorageData = storage.getRoomByIndex(indexRoom);
 
   return {
     type: 'update_room',
