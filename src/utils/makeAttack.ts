@@ -12,11 +12,11 @@ export const attack = (messageObject: string) => {
 
 export const randomAttack = (messageObject: string) => {
   const data = JSON.parse(JSON.parse(messageObject).data);
-  // const users = Storage.getInstance.getUsers();
-  // const { ws, index } = users.find((user) => user.index !== data.indexPlayer);
-  console.log(data);
-  // const response = attackFeedback(data);
-  // ws.send(JSON.stringify(response));
+  const users = Storage.getInstance.getUsers();
+  const { ws } = users.find((user) => user.index === data.indexPlayer);
+  const { x, y } = generateRandomAttack();
+  const response = attackFeedback({ x, y, ...data });
+  ws.send(JSON.stringify(response));
 
   turn(data.indexPlayer);
 };
@@ -52,4 +52,12 @@ function attackFeedback(data: any) {
     }),
     id: 0,
   };
+}
+
+function generateRandomAttack() {
+  const FILED_SIZE = 10;
+  const x = Math.floor(Math.random() * FILED_SIZE);
+  const y = Math.floor(Math.random() * FILED_SIZE);
+
+  return { x, y };
 }
