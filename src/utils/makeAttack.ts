@@ -1,46 +1,46 @@
+import { WebSocketServer } from 'ws';
 import { Storage } from '../Storage/Storage.ts';
 import { checkIsWin, sendFinish, updateWinners } from './updateWinners.ts';
 
-export const attack = (messageObject: string) => {
+export const attack = (messageObject: string, wss: WebSocketServer) => {
   const data = JSON.parse(JSON.parse(messageObject).data);
   const users = Storage.getInstance.getUsers();
-  const { ws } = users.find((user) => user.index === data.indexPlayer);
+  const { name } = users.find((user) => user.index === data.indexPlayer);
   const response = attackFeedback(data);
-  ws.send(JSON.stringify(response));
+  wss.clients.forEach((client) => client.send(JSON.stringify(response)));
   const isWin = checkIsWin(data.indexPlayer);
 
   if (isWin) {
-    ws.send(
-      JSON.stringify({
-        type: 'finish',
-        data: JSON.stringify({
-          winPlayer: data.indexPlayer,
-        }),
-        id: 0,
-      })
-    );
-
-    updateWinners(data.name);
+    wss.clients.forEach((client) => {
+      client.send(JSON.stringify(updateWinners(name)));
+      client.send(JSON.stringify(sendFinish(data.indexPlayer)));
+    });
     return;
   }
   turn(data.indexPlayer);
+
+  return response;
 };
 
-export const randomAttack = (messageObject: string) => {
+export const randomAttack = (messageObject: string, wss: WebSocketServer) => {
   const data = JSON.parse(JSON.parse(messageObject).data);
   const users = Storage.getInstance.getUsers();
-  const { ws } = users.find((user) => user.index === data.indexPlayer);
+  const { name } = users.find((user) => user.index === data.indexPlayer);
   const { x, y } = generateRandomAttack();
   const response = attackFeedback({ x, y, ...data });
-  ws.send(JSON.stringify(response));
+  wss.clients.forEach((client) => client.send(JSON.stringify(response)));
   const isWin = checkIsWin(data.indexPlayer);
 
   if (isWin) {
-    ws.send(JSON.stringify(sendFinish(data.indexPlayer)));
-    updateWinners(data.name);
+    wss.clients.forEach((client) => {
+      client.send(JSON.stringify(updateWinners(name)));
+      client.send(JSON.stringify(sendFinish(data.indexPlayer)));
+    });
     return;
   }
   turn(data.indexPlayer);
+
+  return response;
 };
 
 function turn(playerId: string) {

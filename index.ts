@@ -61,11 +61,11 @@ wss.on('connection', (ws) => {
     }
 
     if (type === 'attack') {
-      attack(messageObject);
+      attack(messageObject, wss);
     }
 
     if (type === 'randomAttack') {
-      randomAttack(messageObject);
+      randomAttack(messageObject, wss);
     }
   });
 
