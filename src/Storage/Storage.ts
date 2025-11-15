@@ -6,6 +6,13 @@ type IRoom = {
   }[];
 };
 
+type IShip = {
+  position: { x: number; y: number };
+  direction: boolean;
+  length: number;
+  type: 'small' | 'medium' | 'large' | 'huge';
+};
+
 export class Storage {
   private data: any[] = [];
   private roomData: any[] = [];
@@ -100,5 +107,29 @@ export class Storage {
 
   getUsers() {
     return this.data;
+  }
+
+  checkPosition(x: number, y: number, indexPlayer: string) {
+    const findDataPositions = this.shipPositions.find(
+      (shipData) => shipData.indexPlayer !== indexPlayer
+    );
+
+    if (
+      findDataPositions.ships.some(
+        ({ position }: IShip) => position.x === x && position.y === y
+      )
+    ) {
+      // 'killed' |
+      return 'shot';
+    }
+
+    if (
+      findDataPositions.ships.every(
+        ({ position }: IShip) => position.x !== x && position.y !== y
+      )
+    ) {
+      //  'killed' |
+      return 'miss';
+    }
   }
 }
