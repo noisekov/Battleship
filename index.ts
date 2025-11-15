@@ -25,7 +25,7 @@ wss.on('connection', (ws) => {
 
     if (type === 'reg') {
       const userData = createUser(messageObject, ws);
-      const roomData = createRoom(userData, type);
+      const roomData = createRoom(type);
       const winnersData = updateWinners();
 
       ws.send(JSON.stringify(userData));
@@ -34,8 +34,7 @@ wss.on('connection', (ws) => {
     }
 
     if (type === 'create_room') {
-      const userData = Storage.getInstance.getUserData();
-      const roomData = createRoom(userData, type);
+      const roomData = createRoom(type);
       ws.send(JSON.stringify(roomData));
     }
 

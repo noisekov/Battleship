@@ -7,8 +7,7 @@ type IuserData = {
   id?: number;
 };
 
-export const createRoom = (userData: IuserData, typeEntry: string) => {
-  const { name, index } = JSON.parse(userData.data);
+export const createRoom = (typeEntry: string) => {
   const roomId = randomUUID();
   const roomData = Storage.getInstance.getRoom();
   let resultArr: any = [];

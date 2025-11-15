@@ -11,6 +11,7 @@ type IShip = {
   direction: boolean;
   length: number;
   type: 'small' | 'medium' | 'large' | 'huge';
+  isKilled: boolean;
 };
 
 export class Storage {
@@ -100,9 +101,15 @@ export class Storage {
     ships.forEach((ship: any) => {
       const allShipsData = Array.from({ length: ship.length }, (_, i) => {
         if (ship.direction) {
-          return { position: { x: ship.position.x, y: ship.position.y + i } };
+          return {
+            position: { x: ship.position.x, y: ship.position.y + i },
+            isKilled: false,
+          };
         } else {
-          return { position: { x: ship.position.x + i, y: ship.position.y } };
+          return {
+            position: { x: ship.position.x + i, y: ship.position.y },
+            isKilled: false,
+          };
         }
       });
 
@@ -131,9 +138,16 @@ export class Storage {
 
     if (
       findDataPositions.ships.some(
-        ({ position }: IShip) => position.x === x && position.y === y
+        ({ position, isKilled }: IShip) =>
+          position.x === x && position.y === y && !isKilled
       )
     ) {
+      const ship = findDataPositions.ships.find(
+        ({ position, isKilled }: IShip) =>
+          position.x === x && position.y === y && !isKilled
+      );
+      ship.isKilled = true;
+
       return 'shot';
     }
 
@@ -145,5 +159,15 @@ export class Storage {
       return 'miss';
     }
     // 'killed' |
+  }
+
+  isWin(indexPlayer: string) {
+    const findDataPositionsAnotherPlayer = this.shipPositions.find(
+      (shipData) => shipData.indexPlayer !== indexPlayer
+    );
+
+    return findDataPositionsAnotherPlayer.ships.every(
+      ({ isKilled }: IShip) => isKilled
+    );
   }
 }
