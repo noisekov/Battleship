@@ -17,7 +17,7 @@ export const attack = (
   const data = JSON.parse(JSON.parse(messageObject).data);
   const users = Storage.getInstance.getUsers();
   const { name } = users.find((user) => user.index === data.indexPlayer);
-  let response;
+  let response: any;
 
   if (type === 'randomAttack') {
     const { x, y } = generateRandomAttack();
@@ -31,7 +31,7 @@ export const attack = (
       ? 'killed'
       : JSON.parse(JSON.parse(response[0]).data).status;
   wss.clients.forEach((client) => {
-    response.forEach((res) => {
+    response.forEach((res: any) => {
       client.send(res);
     });
   });
