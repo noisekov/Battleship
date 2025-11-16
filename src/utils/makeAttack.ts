@@ -2,6 +2,13 @@ import { WebSocketServer } from 'ws';
 import { Storage } from '../Storage/Storage.ts';
 import { checkIsWin, sendFinish, updateWinners } from './updateWinners.ts';
 
+type AttackFeedback = {
+  gameId: string;
+  x: number;
+  y: number;
+  indexPlayer: string;
+};
+
 export const attack = (
   messageObject: string,
   wss: WebSocketServer,
@@ -78,7 +85,7 @@ function turn(playerId: string, status: string) {
   }
 }
 
-function attackFeedback(data: any) {
+function attackFeedback(data: AttackFeedback) {
   const storage = Storage.getInstance;
   const { x, y, indexPlayer } = data;
   const status = storage.checkPosition(x, y, indexPlayer);
