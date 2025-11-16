@@ -106,7 +106,7 @@ function attackFeedback(data: AttackFeedback) {
         id: 0,
       });
     });
-
+    addMissesAroundShips(response, checkKilledShips, indexPlayer);
     storage.clearKilledShips();
 
     return response;
@@ -134,4 +134,58 @@ function generateRandomAttack() {
   const y = Math.floor(Math.random() * FILED_SIZE);
 
   return { x, y };
+}
+
+function addMissesAroundShips(
+  response: any,
+  checkKilledShips: any,
+  indexPlayer: string
+) {
+  const attackedCoords = new Set();
+  const MAX_CELL = 9;
+  const MIN_CELL = 0;
+  response.forEach((attack: any) => {
+    const attackData = JSON.parse(attack);
+    const data = JSON.parse(attackData.data);
+    attackedCoords.add(`${data.position.x},${data.position.y}`);
+  });
+
+  checkKilledShips.forEach((ship: any) => {
+    const { x, y } = ship.position;
+
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        if (dx === 0 && dy === 0) continue;
+
+        const newX = x + dx;
+        const newY = y + dy;
+        const coordKey = `${newX},${newY}`;
+
+        if (
+          newX >= MIN_CELL &&
+          newX <= MAX_CELL &&
+          newY >= MIN_CELL &&
+          newY <= MAX_CELL &&
+          !attackedCoords.has(coordKey)
+        ) {
+          response.push(
+            JSON.stringify({
+              type: 'attack',
+              data: JSON.stringify({
+                position: {
+                  x: newX,
+                  y: newY,
+                },
+                currentPlayer: indexPlayer,
+                status: 'miss',
+              }),
+              id: 0,
+            })
+          );
+
+          attackedCoords.add(coordKey);
+        }
+      }
+    }
+  });
 }
