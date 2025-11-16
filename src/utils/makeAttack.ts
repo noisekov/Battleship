@@ -14,13 +14,20 @@ export const attack = (
 
   if (type === 'randomAttack') {
     const { x, y } = generateRandomAttack();
-    response = attackFeedback({ x, y, ...data });
+    response = attackFeedback({ x, y, ...data }, wss);
   } else {
-    response = attackFeedback(data);
+    response = attackFeedback(data, wss);
   }
 
-  const status = JSON.parse(response.data).status;
-  wss.clients.forEach((client) => client.send(JSON.stringify(response)));
+  const status =
+    response.length > 1
+      ? 'killed'
+      : JSON.parse(JSON.parse(response[0]).data).status;
+  wss.clients.forEach((client) => {
+    response.forEach((res) => {
+      client.send(res);
+    });
+  });
   const isWin = checkIsWin(data.indexPlayer);
 
   if (isWin) {
@@ -39,8 +46,6 @@ export const attack = (
   }
 
   turn(data.indexPlayer, status);
-
-  return response;
 };
 
 function turn(playerId: string, status: string) {
@@ -73,22 +78,47 @@ function turn(playerId: string, status: string) {
   }
 }
 
-function attackFeedback(data: any) {
+function attackFeedback(data: any, wss: WebSocketServer) {
+  const storage = Storage.getInstance;
   const { x, y, indexPlayer } = data;
-  const status = Storage.getInstance.checkPosition(x, y, indexPlayer);
+  const status = storage.checkPosition(x, y, indexPlayer);
+  const checkKilledShips = storage.getKilledShips();
 
-  return {
-    type: 'attack',
-    data: JSON.stringify({
-      position: {
-        x: x,
-        y: y,
-      },
-      currentPlayer: indexPlayer,
-      status: status,
+  if (checkKilledShips.length) {
+    const response = checkKilledShips.map((ship) => {
+      return JSON.stringify({
+        type: 'attack',
+        data: JSON.stringify({
+          position: {
+            x: ship.position.x,
+            y: ship.position.y,
+          },
+          currentPlayer: indexPlayer,
+          status: 'killed',
+        }),
+        id: 0,
+      });
+    });
+
+    storage.clearKilledShips();
+
+    return response;
+  }
+
+  return [
+    JSON.stringify({
+      type: 'attack',
+      data: JSON.stringify({
+        position: {
+          x: x,
+          y: y,
+        },
+        currentPlayer: indexPlayer,
+        status: status,
+      }),
+      id: 0,
     }),
-    id: 0,
-  };
+  ];
 }
 
 function generateRandomAttack() {

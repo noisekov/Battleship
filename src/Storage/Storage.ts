@@ -12,18 +12,21 @@ type IShip = {
   length: number;
   type: 'small' | 'medium' | 'large' | 'huge';
   isKilled: boolean;
+  shipName: string;
 };
 
 export class Storage {
   private data: any[] = [];
   private roomData: any[] = [];
   private shipPositions: any[] = [];
+  private killedShips: IShip[] = [];
   private static _instance: Storage;
 
   private constructor() {
     this.data = [];
     this.roomData = [];
     this.shipPositions = [];
+    this.killedShips = [];
   }
 
   public static get getInstance() {
@@ -98,17 +101,19 @@ export class Storage {
     const { ships } = data;
     const newDataShips: any = [];
 
-    ships.forEach((ship: any) => {
+    ships.forEach((ship: any, indexShip: number) => {
       const allShipsData = Array.from({ length: ship.length }, (_, i) => {
         if (ship.direction) {
           return {
             position: { x: ship.position.x, y: ship.position.y + i },
             isKilled: false,
+            shipName: `ship${indexShip}`,
           };
         } else {
           return {
             position: { x: ship.position.x + i, y: ship.position.y },
             isKilled: false,
+            shipName: `ship${indexShip}`,
           };
         }
       });
@@ -132,32 +137,60 @@ export class Storage {
   }
 
   checkPosition(x: number, y: number, indexPlayer: string) {
-    const findDataPositions = this.shipPositions.find(
+    const { ships } = this.shipPositions.find(
       (shipData) => shipData.indexPlayer !== indexPlayer
     );
 
     if (
-      findDataPositions.ships.some(
+      ships.some(
         ({ position, isKilled }: IShip) =>
           position.x === x && position.y === y && !isKilled
       )
     ) {
-      const ship = findDataPositions.ships.find(
+      const ship = ships.find(
         ({ position, isKilled }: IShip) =>
           position.x === x && position.y === y && !isKilled
       );
       ship.isKilled = true;
-      return 'shot';
+      return this.checkKilledOrShot(ships, ship);
     }
 
     if (
-      findDataPositions.ships.every(
-        ({ position }: IShip) => position.x !== x || position.y !== y
-      )
+      ships.every(({ position }: IShip) => position.x !== x || position.y !== y)
     ) {
       return 'miss';
     }
-    // 'killed' |
+  }
+
+  checkKilledOrShot(ships: any, ship: any) {
+    const {
+      position: { x, y },
+    } = ship;
+
+    const shipdata = ships.find((ship: IShip) => {
+      return ship.position.x === x && ship.position.y === y;
+    });
+
+    const shipsWithSameName = ships.filter(
+      (ship: IShip) => ship.shipName === shipdata.shipName
+    );
+    const isKilled = shipsWithSameName.every((ship: IShip) => {
+      return ship.shipName === shipdata.shipName && ship.isKilled;
+    });
+
+    if (isKilled) {
+      this.killedShips.push(...shipsWithSameName);
+    }
+
+    return 'shot';
+  }
+
+  getKilledShips() {
+    return this.killedShips;
+  }
+
+  clearKilledShips() {
+    this.killedShips = [];
   }
 
   isWin(indexPlayer: string) {
