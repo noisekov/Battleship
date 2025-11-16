@@ -14,9 +14,9 @@ export const attack = (
 
   if (type === 'randomAttack') {
     const { x, y } = generateRandomAttack();
-    response = attackFeedback({ x, y, ...data }, wss);
+    response = attackFeedback({ x, y, ...data });
   } else {
-    response = attackFeedback(data, wss);
+    response = attackFeedback(data);
   }
 
   const status =
@@ -78,7 +78,7 @@ function turn(playerId: string, status: string) {
   }
 }
 
-function attackFeedback(data: any, wss: WebSocketServer) {
+function attackFeedback(data: any) {
   const storage = Storage.getInstance;
   const { x, y, indexPlayer } = data;
   const status = storage.checkPosition(x, y, indexPlayer);
